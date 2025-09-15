@@ -1,0 +1,15 @@
+# Requirements file for the HGVRP Optimizer service
+# Includes web framework, data handling, math, plotting, testing, and HTTP utilities.
+
+fastapi        # Web framework for building APIs
+uvicorn        # ASGI server to run FastAPI apps
+pydantic       # Data validation and schema management (used in request/response models)
+
+numpy          # Numerical computing (arrays, math, linear algebra)
+pandas         # Data manipulation and analysis (tables, dataframes)
+matplotlib     # Plotting and visualization (charts, figures)
+
+pytest         # Testing framework for unit/integration tests
+requests       # HTTP client for making external API calls
+
+httpx

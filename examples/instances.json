@@ -1,0 +1,684 @@
+{
+  "defaults": {
+    "penalty": {
+      "beta_capacity": 1.0,
+      "beta_duration": 1.0,
+      "beta_timewindows": 1.0,
+      "beta_availability": 1.0,
+      "beta_battery": 1.0,
+      "beta_coverage": 1000.0,
+      "beta_supply": 1000.0
+    }
+  },
+
+  "vehicle_eval": {
+    "diesel_basic": {
+      "instance": {
+        "depot": { "id": 100, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 10,
+            "fuel_efficiency": 1.0,
+            "emission_level": 0.2,
+            "vehicle_type": "Diesel",
+            "fuel_type": "Diesel",
+            "fixed_costs": 5.0,
+            "variable_costs": 1.0
+          }
+        ],
+        "customers": [
+          {
+            "id": 1,
+            "x": 1,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0
+          },
+          {
+            "id": 2,
+            "x": 3,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0
+          }
+        ]
+      },
+      "routes": [[0, 1, 2, 0]],
+      "expectations": {
+        "approx": {
+          "Z1_total_distance": 6.0,
+          "Z4_total_fuel": 6.0,
+          "Z3_vehicles_used": 1,
+          "Z6_total_costs": 11.0
+        },
+        "zero": [
+          "P_capacity",
+          "P_duration",
+          "P_timewindows",
+          "P_availability",
+          "P_battery",
+          "P_coverage",
+          "P_supply"
+        ]
+      }
+    },
+
+    "gasoline_basic": {
+      "instance": {
+        "depot": { "id": 100, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 10,
+            "fuel_efficiency": 2.0,
+            "emission_level": 0.15,
+            "vehicle_type": "Gasoline",
+            "fuel_type": "Gasoline",
+            "fixed_costs": 4.0,
+            "variable_costs": 0.5
+          }
+        ],
+        "customers": [
+          {
+            "id": 1,
+            "x": 2,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0
+          },
+          {
+            "id": 2,
+            "x": 4,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0
+          }
+        ]
+      },
+      "routes": [[0, 1, 2, 0]],
+      "expectations": {
+        "approx": {
+          "Z1_total_distance": 8.0,
+          "Z4_total_fuel": 4.0,
+          "Z6_total_costs": 8.0
+        },
+        "eq": { "Z3_vehicles_used": 1 }
+      }
+    },
+
+    "cng_basic": {
+      "instance": {
+        "depot": { "id": 1, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 8,
+            "fuel_efficiency": 1.5,
+            "emission_level": 0.05,
+            "vehicle_type": "CNG",
+            "fuel_type": "CNG",
+            "fixed_costs": 3.0,
+            "variable_costs": 0.8
+          }
+        ],
+        "customers": [
+          {
+            "id": 1,
+            "x": 1,
+            "y": 1,
+            "demand": 3,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 2,
+            "x": 2,
+            "y": 2,
+            "demand": 3,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          }
+        ]
+      },
+      "routes": [[0, 1, 2, 0]],
+      "expectations": {
+        "gt": { "Z5_total_emissions": 0.0 },
+        "zero": [
+          "P_capacity",
+          "P_duration",
+          "P_timewindows",
+          "P_availability",
+          "P_battery",
+          "P_coverage",
+          "P_supply"
+        ]
+      }
+    },
+
+    "hydrogen_basic": {
+      "instance": {
+        "depot": { "id": 1, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 8,
+            "fuel_efficiency": 3.0,
+            "emission_level": 0.0,
+            "vehicle_type": "Hydrogen",
+            "fuel_type": "Hydrogen",
+            "fixed_costs": 6.0,
+            "variable_costs": 0.7
+          }
+        ],
+        "customers": [
+          {
+            "id": 1,
+            "x": 3,
+            "y": 4,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          }
+        ]
+      },
+      "routes": [[0, 1, 0]],
+      "expectations": {
+        "approx": {
+          "Z1_total_distance": 10.0,
+          "Z4_total_fuel": 3.3333333333
+        },
+        "eq": { "Z5_total_emissions": 0.0 }
+      }
+    },
+
+    "electric_range_ok": {
+      "instance": {
+        "depot": { "id": 1, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 10,
+            "fuel_efficiency": 1.0,
+            "emission_level": 0.0,
+            "vehicle_type": "Electric",
+            "fuel_type": "Battery",
+            "battery_capacity": 12.0,
+            "fixed_costs": 2.0,
+            "variable_costs": 0.2
+          }
+        ],
+        "customers": [
+          {
+            "id": 1,
+            "x": 2,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0
+          },
+          {
+            "id": 2,
+            "x": 4,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0
+          }
+        ]
+      },
+      "routes": [[0, 1, 2, 0]],
+      "expectations": {
+        "zero": ["P_battery"]
+      }
+    },
+
+    "electric_range_violation": {
+      "instance": {
+        "depot": { "id": 1, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 10,
+            "fuel_efficiency": 1.0,
+            "emission_level": 0.0,
+            "vehicle_type": "Electric",
+            "fuel_type": "Battery",
+            "battery_capacity": 5.0,
+            "fixed_costs": 2.0,
+            "variable_costs": 0.2
+          }
+        ],
+        "customers": [
+          {
+            "id": 1,
+            "x": 3,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0
+          },
+          {
+            "id": 2,
+            "x": 6,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0
+          }
+        ]
+      },
+      "routes": [[0, 1, 2, 0]],
+      "expectations": {
+        "gt": { "P_battery": 0.0 }
+      }
+    },
+
+    "hybrid_basic": {
+      "instance": {
+        "depot": { "id": 10, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 10,
+            "fuel_efficiency": 2.5,
+            "emission_level": 0.05,
+            "vehicle_type": "Hybrid",
+            "fuel_type": "Hybrid",
+            "fixed_costs": 3.0,
+            "variable_costs": 0.6
+          }
+        ],
+        "customers": [
+          {
+            "id": 1,
+            "x": 3,
+            "y": 4,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 2,
+            "x": 6,
+            "y": 8,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          }
+        ]
+      },
+      "routes": [[0, 1, 2, 0]],
+      "expectations": {
+        "gt": { "Z4_total_fuel": 0.0, "Z5_total_emissions": 0.0 }
+      }
+    },
+
+    "bike_lastmile": {
+      "instance": {
+        "depot": { "id": 5, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 3,
+            "fuel_efficiency": 1000.0,
+            "emission_level": 0.0,
+            "vehicle_type": "Bike",
+            "fuel_type": "Human",
+            "fixed_costs": 0.5,
+            "variable_costs": 0.1,
+            "max_route_time": 100.0
+          }
+        ],
+        "customers": [
+          {
+            "id": 1,
+            "x": 1,
+            "y": 1,
+            "demand": 1,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 2,
+            "x": 2,
+            "y": 0,
+            "demand": 1,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          }
+        ]
+      },
+      "routes": [[0, 1, 2, 0]],
+      "expectations": {
+        "zero": [
+          "P_capacity",
+          "P_battery",
+          "P_supply",
+          "P_timewindows",
+          "P_availability",
+          "P_duration"
+        ]
+      }
+    },
+
+    "drone_basic": {
+      "instance": {
+        "depot": { "id": 7, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 1,
+            "fuel_efficiency": 5.0,
+            "emission_level": 0.0,
+            "vehicle_type": "Drone",
+            "fuel_type": "Battery",
+            "battery_capacity": 3.0,
+            "fixed_costs": 1.0,
+            "variable_costs": 0.05
+          }
+        ],
+        "customers": [
+          {
+            "id": 1,
+            "x": 1,
+            "y": 0,
+            "demand": 1,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          }
+        ]
+      },
+      "routes": [[0, 1, 0]],
+      "expectations": {
+        "zero": ["P_battery", "P_capacity"]
+      }
+    },
+
+    "heavy_truck_duration_and_availability": {
+      "instance": {
+        "depot": { "id": 9, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 100,
+            "fuel_efficiency": 0.5,
+            "emission_level": 0.5,
+            "vehicle_type": "HeavyTruck",
+            "fuel_type": "Diesel",
+            "fixed_costs": 20.0,
+            "variable_costs": 2.0,
+            "availability": [0.0, 5.0],
+            "max_route_time": 5.0
+          }
+        ],
+        "customers": [
+          {
+            "id": 1,
+            "x": 3,
+            "y": 0,
+            "demand": 5,
+            "time_windows": [0, 2],
+            "service_time": 0.0
+          },
+          {
+            "id": 2,
+            "x": 6,
+            "y": 0,
+            "demand": 5,
+            "time_windows": [0, 2],
+            "service_time": 0.0
+          }
+        ]
+      },
+      "routes": [[0, 1, 2, 0]],
+      "expectations": {
+        "gt": { "P_duration": 0.0, "P_availability": 0.0 },
+        "zero": ["P_capacity"]
+      }
+    }
+  },
+
+  "construct_sets": {
+    "balanced_small": {
+      "instance": {
+        "depot": { "id": 50, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 5,
+            "fuel_efficiency": 1.0,
+            "emission_level": 0.0,
+            "vehicle_type": "Diesel",
+            "fuel_type": "Diesel",
+            "fixed_costs": 0.0,
+            "variable_costs": 0.0
+          },
+          {
+            "id": 2,
+            "capacity": 5,
+            "fuel_efficiency": 1.0,
+            "emission_level": 0.0,
+            "vehicle_type": "Diesel",
+            "fuel_type": "Diesel",
+            "fixed_costs": 0.0,
+            "variable_costs": 0.0
+          }
+        ],
+        "customers": [
+          {
+            "id": 10,
+            "x": 1,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 11,
+            "x": 2,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 12,
+            "x": 3,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          }
+        ]
+      },
+      "method": "balanced"
+    },
+
+    "greedy_small": {
+      "instance": {
+        "depot": { "id": 51, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 6,
+            "fuel_efficiency": 1.0,
+            "emission_level": 0.0,
+            "vehicle_type": "Diesel",
+            "fuel_type": "Diesel",
+            "fixed_costs": 0.0,
+            "variable_costs": 0.0
+          },
+          {
+            "id": 2,
+            "capacity": 4,
+            "fuel_efficiency": 1.0,
+            "emission_level": 0.0,
+            "vehicle_type": "Diesel",
+            "fuel_type": "Diesel",
+            "fixed_costs": 0.0,
+            "variable_costs": 0.0
+          }
+        ],
+        "customers": [
+          {
+            "id": 20,
+            "x": 1,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 21,
+            "x": 2,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 22,
+            "x": 3,
+            "y": 0,
+            "demand": 2,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          }
+        ]
+      },
+      "method": "greedy",
+      "seed": 123
+    }
+  },
+
+  "localsearch_sets": {
+    "two_opt_square": {
+      "instance": {
+        "depot": { "id": 1, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 999.0,
+            "fuel_efficiency": 1.0,
+            "emission_level": 0.0,
+            "vehicle_type": "Diesel",
+            "fuel_type": "Diesel",
+            "fixed_costs": 0.0,
+            "variable_costs": 0.0
+          }
+        ],
+        "customers": [
+          {
+            "id": 1,
+            "x": 1,
+            "y": 0,
+            "demand": 1.0,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 2,
+            "x": 2,
+            "y": 0,
+            "demand": 1.0,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 3,
+            "x": 1,
+            "y": 1,
+            "demand": 1.0,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 4,
+            "x": 2,
+            "y": 1,
+            "demand": 1.0,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          }
+        ]
+      },
+      "routes": [[0, 1, 4, 3, 2, 0]],
+      "ops": ["2opt"],
+      "budget": 200,
+      "seed": 42
+    },
+    "two_routes_cross": {
+      "instance": {
+        "depot": { "id": 0, "x": 0, "y": 0, "start_time": 0.0 },
+        "vehicles": [
+          {
+            "id": 1,
+            "capacity": 999.0,
+            "fuel_efficiency": 1.0,
+            "emission_level": 0.0,
+            "vehicle_type": "Diesel",
+            "fuel_type": "Diesel",
+            "fixed_costs": 0.0,
+            "variable_costs": 0.0
+          },
+          {
+            "id": 2,
+            "capacity": 999.0,
+            "fuel_efficiency": 1.0,
+            "emission_level": 0.0,
+            "vehicle_type": "Diesel",
+            "fuel_type": "Diesel",
+            "fixed_costs": 0.0,
+            "variable_costs": 0.0
+          }
+        ],
+        "customers": [
+          {
+            "id": 1,
+            "x": 2,
+            "y": 2,
+            "demand": 1.0,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 2,
+            "x": 2,
+            "y": -2,
+            "demand": 1.0,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 3,
+            "x": -2,
+            "y": 2,
+            "demand": 1.0,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          },
+          {
+            "id": 4,
+            "x": -2,
+            "y": -2,
+            "demand": 1.0,
+            "time_windows": [0, 100],
+            "service_time": 0.0
+          }
+        ]
+      },
+      "routes": [
+        [0, 1, 4, 0],
+        [0, 3, 2, 0]
+      ],
+      "ops": ["cross"],
+      "budget": 200,
+      "seed": 42
+    }
+  }
+}

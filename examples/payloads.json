@@ -1,0 +1,81 @@
+{
+  "evaluate": {
+    "instance": {
+      "depot": { "id": 1, "x": 0, "y": 0, "start_time": 0.0 },
+      "vehicles": [
+        {
+          "id": 1,
+          "capacity": 10,
+          "fuel_efficiency": 1.0,
+          "emission_level": 0.0,
+          "vehicle_type": "Diesel",
+          "fuel_type": "Diesel"
+        }
+      ],
+      "customers": [
+        {
+          "id": 1,
+          "x": 2,
+          "y": 0,
+          "demand": 2,
+          "time_windows": [0, 100],
+          "service_time": 0.0
+        }
+      ]
+    },
+    "routes": [[0, 1, 0]],
+    "penalty": {}
+  },
+  "construct": {
+    "instance": {
+      "depot": { "id": 1, "x": 0, "y": 0, "start_time": 0.0 },
+      "vehicles": [
+        {
+          "id": 1,
+          "capacity": 5,
+          "fuel_efficiency": 1.0,
+          "emission_level": 0.0,
+          "vehicle_type": "Diesel",
+          "fuel_type": "Diesel"
+        },
+        {
+          "id": 2,
+          "capacity": 5,
+          "fuel_efficiency": 1.0,
+          "emission_level": 0.0,
+          "vehicle_type": "Diesel",
+          "fuel_type": "Diesel"
+        }
+      ],
+      "customers": [
+        {
+          "id": 10,
+          "x": 1,
+          "y": 0,
+          "demand": 2,
+          "time_windows": [0, 100],
+          "service_time": 0.0
+        },
+        {
+          "id": 11,
+          "x": 2,
+          "y": 0,
+          "demand": 2,
+          "time_windows": [0, 100],
+          "service_time": 0.0
+        }
+      ]
+    },
+    "method": "greedy",
+    "penalty": {},
+    "seed": 123
+  },
+  "localsearch": {
+    "instance": {},
+    "routes": [[0, 1, 0]],
+    "penalty": {},
+    "budget": 50,
+    "ops": ["2opt"],
+    "seed": 42
+  }
+}
