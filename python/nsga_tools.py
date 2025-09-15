@@ -2,8 +2,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Tuple, Optional
-import math
-import random
 
 # ======== Data containers ========
 
@@ -220,7 +218,7 @@ class EliteArchive:
             "hard_penalty_keys": self.hard_penalty_keys,
         }
 
-# ======== Simple 2D hypervolume (minimization) for tests/metrics ========
+# ======== Simple 2D hypervolume (minimization) for tests/metrics) ========
 def hypervolume_2d(points: List[Tuple[float, float]], ref: Tuple[float, float]) -> float:
     """
     Points must be a non-dominated set for 2D minimization.

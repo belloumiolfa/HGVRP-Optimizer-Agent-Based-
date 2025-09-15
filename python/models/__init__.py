@@ -9,5 +9,5 @@ from .api_schemas import (
     EvaluateRequest, EvaluateResponse,
     ConstructRequest, ConstructResponse,
     LocalSearchRequest, LocalSearchResponse,
-    OptimizeRequest,OptimizePayload,OptimizeParetoRequest
+    OptimizeRequest,OptimizePayload
 )

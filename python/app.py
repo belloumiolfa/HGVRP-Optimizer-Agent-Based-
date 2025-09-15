@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Body, HTTPException
+from fastapi import FastAPI,Body, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, Any
 import random
@@ -7,7 +7,7 @@ from .models import (
     EvaluateRequest, EvaluateResponse,
     ConstructRequest, ConstructResponse,
     LocalSearchRequest, LocalSearchResponse,
-    OptimizeRequest, OptimizeParetoRequest
+    OptimizeRequest
 )
 from .eval import AssignmentAgent
 from .construct import construct_balanced, construct_greedy
@@ -16,7 +16,8 @@ from .construct import construct_balanced, construct_greedy
 from .ga import GAConfig as AdaptiveGACfg, AdaptiveGA, optimize_single
 from .adapt import BanditConfig
 from .penalty_manager import PenaltyConfig
- 
+from .ga_pareto import NSGA2Optimizer      # Phase 7
+
 app = FastAPI(title="HGVRP Optimizer (Agent-Based)", version="0.9")
 
 app.add_middleware(
@@ -89,23 +90,41 @@ def endpoint_localsearch(req: LocalSearchRequest) -> Dict[str, Any]:
     metrics = _flatten_metrics(structured)
     return {"status": "ok", "routes": routes, "metrics": metrics, "improved": improved}
 
+# ----------- endpoint -----------
 @app.post("/optimize")
-def endpoint_optimize(req: OptimizeRequest):
-    mode = getattr(req, "mode", None) or "adaptive"
+def endpoint_optimize(req: OptimizeRequest = Body(...)) -> Dict[str, Any]:
+    mode = req.mode or "adaptive"
 
+    # ----- SINGLE (scalar) -----
     if mode == "single":
-        cfg_dict = getattr(req, "ga_config", None) or getattr(req, "ga", None) or {}
+        cfg_dict = req.ga_config or req.ga or {}
+        if req.penalty is None:
+            raise HTTPException(status_code=400, detail="Missing 'penalty' for single mode.")
         cfg = AdaptiveGACfg(**cfg_dict)
-        out = optimize_single(req.instance, req.penalties, cfg, getattr(req, "wZ", None), getattr(req, "wP", None))
+        out = optimize_single(
+            req.instance,
+            req.penalty,
+            cfg,
+            req.wZ,
+            req.wP,
+        )
         return {"status": "ok", "mode": mode, **out}
 
+    # ----- ADAPTIVE (bandit GA) -----
     if mode == "adaptive":
-        ga_dict = getattr(req, "ga", None) or getattr(req, "ga_config", None) or {}
-        bandit_dict = getattr(req, "bandit", None) or {}
-        penalty_dict = getattr(req, "penalty", None) or {}
+        ga_dict = req.ga or req.ga_config or {}
+        bandit_dict = req.bandit or {}
+        penalty_dict: Dict[str, Any] = {}
+        # allow either provided object or dict
+        if req.penalty is not None:
+            # already a PenaltyConfig object
+            penalty_cfg = req.penalty
+        else:
+            penalty_cfg = PenaltyConfig(**penalty_dict) if penalty_dict else PenaltyConfig()
+
         ga_cfg = AdaptiveGACfg(**ga_dict)
         bandit_cfg = BanditConfig(**bandit_dict)
-        penalty_cfg = PenaltyConfig(**penalty_dict)
+
         algo = AdaptiveGA(
             instance=req.instance,
             ga_cfg=ga_cfg,
@@ -115,11 +134,11 @@ def endpoint_optimize(req: OptimizeRequest):
         out = algo.run(mode="adaptive")
         return {"status": "ok", "mode": mode, "result": out}
 
-    raise HTTPException(status_code=400, detail=f"Unsupported mode '{mode}'. Use 'single' or 'adaptive'.")
-
-@app.post("/optimize-pareto")
-def optimize(req: OptimizeParetoRequest = Body(...)) -> Dict[str, Any]:
-    if req.mode == "pareto":
+    # ----- PARETO (NSGA-II) -----
+    if mode == "pareto":
+        if req.penalty is None:
+            # NSGA-II still needs penalties for feasibility checks
+            raise HTTPException(status_code=400, detail="Missing 'penalty' for pareto mode.")
         opt = NSGA2Optimizer(
             instance=req.instance,
             penalty_cfg=req.penalty,
@@ -134,6 +153,7 @@ def optimize(req: OptimizeParetoRequest = Body(...)) -> Dict[str, Any]:
             pc=req.pc,
             pm=req.pm,
         )
-        return {"status": "ok", **out}
-    # (Optionally keep your scalar GA path here for mode="scalar")
-    return {"status": "error", "message": "Unsupported mode"}
+        return {"status": "ok", "mode": mode, **out}
+
+    # unknown mode
+    raise HTTPException(status_code=400, detail=f"Unsupported mode '{mode}'. Use 'single', 'adaptive', or 'pareto'.")

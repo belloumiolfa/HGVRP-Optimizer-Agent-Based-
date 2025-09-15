@@ -59,10 +59,25 @@ class OptimizePayload(BaseModel):
     bandit: Optional[Dict[str, Any]] = None
     penalty: Optional[Dict[str, Any]] = None
 
-class OptimizeParetoRequest(BaseModel):
-    mode: Literal["scalar", "pareto"] = "pareto"
+class OptimizeRequest(BaseModel):
+    # common
+    mode: Literal["single", "adaptive", "pareto"] = "adaptive"
     instance: Instance
-    penalty: PenaltyConfig
+
+    # penalties for single/adaptive; also re-used by pareto
+    # Accept both “penalty” and legacy “penalties” keys by aliasing if you prefer
+    penalty: Optional[PenaltyConfig] = None
+
+    # === single (scalar GA) ===
+    ga_config: Optional[Dict[str, Any]] = None   # legacy name
+    ga: Optional[Dict[str, Any]] = None          # preferred name
+    wZ: Optional[Dict[str, float]] = None
+    wP: Optional[Dict[str, float]] = None
+
+    # === adaptive (bandit GA) ===
+    bandit: Optional[Dict[str, Any]] = None
+
+    # === pareto (NSGA-II) ===
     population_size: int = 40
     generations: int = 40
     constructor: Literal["balanced", "greedy"] = "balanced"
