@@ -1,10 +1,26 @@
-# python/nsga_tools.py
+# python/nsga_tools.py (updated)
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Tuple, Optional
 
-# ======== Data containers ========
+# ======== Objective sets ========
+# Keep Pareto ranking on ALL objectives:
+DEFAULT_ALL_OBJS = ["Z1", "Z2", "Z3", "Z4", "Z5", "Z6"]
+# Mark discrete objectives here (Z3 = vehicles used)
+DEFAULT_DISCRETE_OBJS = {"Z3"}
 
+def default_crowding_objectives(
+    all_objs: List[str] = DEFAULT_ALL_OBJS,
+    discrete: set[str] = DEFAULT_DISCRETE_OBJS
+) -> List[str]:
+    """
+    Objectives used for CROWDING DISTANCE only.
+    By default, exclude discrete objectives (e.g., Z3) from distance calculation
+    to stabilize selection on plateaus.
+    """
+    return [o for o in all_objs if o not in discrete]
+
+# ======== Data containers ========
 @dataclass
 class Individual:
     routes: List[List[int]]
@@ -107,25 +123,35 @@ def fast_non_dominated_sort(
     fronts.pop()
     return fronts
 
-# ======== Crowding distance ========
+# ======== Crowding distance (computed on continuous subset) ========
 def crowding_distance(front: List[int], pop: List[Individual], objective_keys: List[str]) -> Dict[int, float]:
+    """
+    Compute crowding distance over the provided objective_keys only.
+    NOTE: objective_keys here should typically EXCLUDE discrete objectives (e.g., Z3).
+    """
     if not front:
         return {}
     dist = {idx: 0.0 for idx in front}
+
+    # Small fronts: still mark boundaries as infinite (handled per-objective below)
     for k in objective_keys:
         # sort indices by objective k
         front_sorted = sorted(front, key=lambda i: pop[i].Z[k])
         fmin = pop[front_sorted[0]].Z[k]
         fmax = pop[front_sorted[-1]].Z[k]
-        if abs(fmax - fmin) < 1e-12:
+        span = fmax - fmin
+        if abs(span) < 1e-12:
+            # all equal on this objective -> no contribution
             continue
         # boundary points get inf crowding
         dist[front_sorted[0]] = float("inf")
         dist[front_sorted[-1]] = float("inf")
+        # internal points get normalized neighbor gap
         for i in range(1, len(front_sorted) - 1):
             prev_v = pop[front_sorted[i - 1]].Z[k]
             next_v = pop[front_sorted[i + 1]].Z[k]
-            dist[front_sorted[i]] += (next_v - prev_v) / (fmax - fmin)
+            dist[front_sorted[i]] += (next_v - prev_v) / span
+
     return dist
 
 # ======== Survivor selection (μ+λ) by (rank, crowding) ========
@@ -134,14 +160,25 @@ def select_nsga2(
     mu: int,
     objective_keys: List[str],
     hard_penalty_keys: List[str],
+    crowding_keys: Optional[List[str]] = None,
 ) -> Tuple[List[Individual], List[List[int]]]:
+    """
+    NSGA-II survivor selection.
+    - objective_keys: ALL objectives used for dominance sorting (e.g., Z1..Z6)
+    - crowding_keys: objectives used ONLY for crowding distance
+                     (defaults to continuous-only via default_crowding_objectives)
+    """
+    if crowding_keys is None:
+        crowding_keys = default_crowding_objectives(objective_keys)
+
     fronts = fast_non_dominated_sort(combined, objective_keys, hard_penalty_keys)
     selected: List[Individual] = []
     for front in fronts:
         if len(selected) + len(front) <= mu:
             selected.extend(combined[i] for i in front)
         else:
-            cd = crowding_distance(front, combined, objective_keys)
+            cd = crowding_distance(front, combined, crowding_keys)
+            # Sort by descending crowding distance
             front_sorted = sorted(front, key=lambda i: cd.get(i, 0.0), reverse=True)
             need = mu - len(selected)
             selected.extend(combined[i] for i in front_sorted[:need])
@@ -152,12 +189,19 @@ def select_nsga2(
 class EliteArchive:
     """
     Maintains a (bounded) non-dominated set across generations.
-    Uses constraint-domination + Pareto. Thins by crowding when full.
+    Uses constraint-domination + Pareto. Thins by CROWDING (on continuous subset) when full.
     """
-    def __init__(self, max_size: int, objective_keys: List[str], hard_penalty_keys: List[str]):
+    def __init__(
+        self,
+        max_size: int,
+        objective_keys: List[str],
+        hard_penalty_keys: List[str],
+        crowding_keys: Optional[List[str]] = None,
+    ):
         self.max_size = max_size
         self.objective_keys = objective_keys
         self.hard_penalty_keys = hard_penalty_keys
+        self.crowding_keys = crowding_keys or default_crowding_objectives(objective_keys)
         self.items: List[Individual] = []
 
     def _insert_one(self, ind: Individual) -> None:
@@ -187,10 +231,10 @@ class EliteArchive:
             new_items.append(ind)
         self.items = new_items
 
-        # thin if needed
+        # thin if needed (use filtered crowding keys)
         if len(self.items) > self.max_size:
             front = list(range(len(self.items)))
-            cd = crowding_distance(front, self.items, self.objective_keys)
+            cd = crowding_distance(front, self.items, self.crowding_keys)
             # remove the smallest-crowding first until size fits
             order = sorted(front, key=lambda i: cd.get(i, 0.0))
             to_remove = len(self.items) - self.max_size
@@ -216,9 +260,10 @@ class EliteArchive:
             "size": len(self.items),
             "objective_keys": self.objective_keys,
             "hard_penalty_keys": self.hard_penalty_keys,
+            "crowding_keys": self.crowding_keys,
         }
 
-# ======== Simple 2D hypervolume (minimization) for tests/metrics) ========
+# ======== Simple 2D hypervolume (minimization) for tests/metrics ========
 def hypervolume_2d(points: List[Tuple[float, float]], ref: Tuple[float, float]) -> float:
     """
     Points must be a non-dominated set for 2D minimization.

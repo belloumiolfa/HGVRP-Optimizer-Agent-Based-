@@ -36,7 +36,9 @@ class VehicleAgent:                                  # Agent responsible for eva
             a, b = route[i], route[i + 1]              # Current leg endpoints (canonical indices)
             dist = assigner._leg_distance(a, b, self.start_depot)  # Geometric leg distance (handles depot legs)
             distance += dist                            # Accumulate distance
-            time += dist                                # Advance time assuming unit speed (τ = distance)
+            # time += dist                              # Advance time assuming unit speed (τ = distance)
+            tau = assigner._leg_time(a, b, self.start_depot)
+            time += tau
 
             eff = max(1e-12, self.v.fuel_efficiency)    # Guard efficiency to avoid division by zero
             f_used = dist / eff                         # Fuel/energy used on this leg
